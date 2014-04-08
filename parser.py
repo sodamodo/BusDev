@@ -5,8 +5,8 @@ import csv
 import yaml
 import psycopg2
 import datetime
-
-conn_string = "host='168.62.176.216' dbname='bus' user='postgres' password='altsam'"
+conn_string = "host='168.62.176.216' dbname='bus' user='postgres' password='geografio'"
+# conn_string = "host='168.62.176.216' dbname='bus' user='postgres' password='altsam'"
 conn = psycopg2.connect(conn_string)
 cursor = conn.cursor()
 
@@ -54,28 +54,29 @@ def data_strip(data):
 
 
 
-grandarray = []
-# for hour in range(6, 21):
-for hour in range(12, 14):
-    for minute in range(1, 60):
-        print minute
-        for second in range(1, 61, 10):
-            d = datetime.datetime(year, month, day, hour, minute, second)
-            grandarray.append(data_strip(get_data(make_link(in_unix(d)))))
-
-
-print("finished grand array")
-
-for rows in grandarray:
-    for subrows in rows:
-        tupe = (subrows[0], subrows[1], subrows[2], subrows[3], subrows[4])
-        cursor.execute("""INSERT INTO bus (time,route,speed,latitude,longitude) VALUES (%s,%s,%s,%s,%s);""", tupe)
-        conn.commit()
-
-print("finished inserting tuples")
+# grandarray = []
+# # for hour in range(6, 21):
+# for hour in range(12, 14):
+#     for minute in range(1, 60):
+#         print minute
+#         for second in range(1, 61, 10):
+#             d = datetime.datetime(year, month, day, hour, minute, second)
+#             grandarray.append(data_strip(get_data(make_link(in_unix(d)))))
+#
+#
+# print("finished grand array")
+#
+# for rows in grandarray:
+#     for subrows in rows:
+#         tupe = (subrows[0], subrows[1], subrows[2], subrows[3], subrows[4])
+#         cursor.execute("""INSERT INTO bus (time,route,speed,latitude,longitude) VALUES (%s,%s,%s,%s,%s);""", tupe)
+#         conn.commit()
+#
+# print("finished inserting tuples")
 
 
 valuelist = []
+cursor.execute("SELECT * FROM bus")
 records = cursor.fetchall()
 count = 0
 for i in records:
