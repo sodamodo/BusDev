@@ -5,7 +5,7 @@ import csv
 import yaml
 import psycopg2
 import datetime
-conn_string = "host='168.62.176.216' dbname='bus' user='postgres' password='geografio'"
+conn_string = "host='localhost' dbname='bus' user='postgres' password='geografio'"
 # conn_string = "host='168.62.176.216' dbname='bus' user='postgres' password='altsam'"
 conn = psycopg2.connect(conn_string)
 cursor = conn.cursor()
@@ -17,7 +17,7 @@ day = 4
 hour = 7
 minute = 0
 second = 0
-#writer=csv.writer(open('testo.csv','wb'))
+
 
 
 def make_link(time):
@@ -52,48 +52,53 @@ def data_strip(data):
     return row
 
 
+writer=csv.writer(open('uberdata.csv','wb'))
 
 
-# grandarray = []
-# # for hour in range(6, 21):
-# for hour in range(12, 14):
-#     for minute in range(1, 60):
-#         print minute
-#         for second in range(1, 61, 10):
-#             d = datetime.datetime(year, month, day, hour, minute, second)
-#             grandarray.append(data_strip(get_data(make_link(in_unix(d)))))
-#
-#
-# print("finished grand array")
-#
-# for rows in grandarray:
-#     for subrows in rows:
-#         tupe = (subrows[0], subrows[1], subrows[2], subrows[3], subrows[4])
-#         cursor.execute("""INSERT INTO bus (time,route,speed,latitude,longitude) VALUES (%s,%s,%s,%s,%s);""", tupe)
-#         conn.commit()
-#
-# print("finished inserting tuples")
+def query(daystart,dayend):
+    grandarray = []
+    for day in range(daystart, dayend):
+        for hour in range(6, 22):
+            print(hour)
+            for minute in range(1, 60):
+                for second in range(1, 61, 10):
+                    d = datetime.datetime(year, month, day, hour, minute, second)
+                    grandarray = data_strip(get_data(make_link(in_unix(d))))
+    return grandarray
 
 
-valuelist = []
-cursor.execute("SELECT * FROM bus")
-records = cursor.fetchall()
-count = 0
-for i in records:
-     valuelist.append(((datetime.datetime.fromtimestamp(i[0]).strftime('%Y-%m-%d %H:%M:%S')), i[1], i[2],i[3],i[4]))
-     count += 1
-     if count % 100 == 0:
-         print count
+def processor(grandarray):
 
-count = 0
-for r in valuelist:
-     cursor.execute("""INSERT INTO rebus (time,route,speed,latitude,longitude) VALUES (%s,%s,%s,%s,%s);""", r)
-     conn.commit()
-     count += 1
-     if count % 100 == 0:
-         print count
+    for rows in grandarray:
+        for subrows in rows:
+            tupe = (subrows[0], subrows[1], subrows[2], subrows[3], subrows[4])
+            cursor.execute("""INSERT INTO bus (time,route,speed,latitude,longitude) VALUES (%s,%s,%s,%s,%s);""", tupe)
+            conn.commit()
 
 
+    valuelist = []
+    cursor.execute("SELECT * FROM bus")
+    records = cursor.fetchall()
+    count = 0
+    for i in records:
+         valuelist.append(((datetime.datetime.fromtimestamp(i[0]).strftime('%Y-%m-%d %H:%M:%S')), i[1], i[2],i[3],i[4]))
+         count += 1
+         if count % 100 == 0:
+             print count
 
-cursor.execute("SELECT * FROM rebus LIMIT 1000")
-print cursor.fetchall()
+    count = 0
+    for r in valuelist:
+         # cursor.execute("""INSERT INTO rebus (time,route,speed,latitude,longitude) VALUES (%s,%s,%s,%s,%s);""", r)
+         # conn.commit()
+         writer.writerow(r)
+         count += 1
+         if count % 100 == 0:
+             print count
+
+
+
+
+processor(query(1,7))
+
+
+
